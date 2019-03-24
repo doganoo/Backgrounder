@@ -49,6 +49,8 @@ class Backgrounder {
     private $jobList = null;
     /** @var bool $locked */
     private $locked = false;
+    /** @var bool $debug */
+    private $debug = false;
 
     /**
      * Backgrounder constructor.
@@ -83,6 +85,20 @@ class Backgrounder {
         $created = $dirHandler->createFile(Backgrounder::LOCK_FILE_NAME, false, getmygid());
         $this->setLocked($created);
         return $created;
+    }
+
+    /**
+     * @param bool $debug
+     */
+    public function setDebug(bool $debug):void {
+        $this->debug = $debug;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug():bool {
+        return $this->debug;
     }
 
     /**
@@ -125,9 +141,13 @@ class Backgrounder {
                 continue;
             }
 
-            $lastRun = null === $job->getLastRun() ? 0 : $job->getLastRun();
 
-            $skippable = ($lastRun + $job->getInterval()) > $now;
+            $skippable = $this->isSkippable(
+                $job->getLastRun()
+                , $job->getInterval()
+                , $now
+            );
+
             if (true === $skippable) {
                 $job->addInfo("status", Backgrounder::REGULAR_JOB_INTERVAL_NOT_REACHED);
                 continue;
@@ -142,6 +162,12 @@ class Backgrounder {
 
         $this->unlock();
         return $this->getJobList();
+    }
+
+    private function isSkippable(?int $lastRun, int $interval, int $now):bool {
+        $lastRun = null === $lastRun ? 0 : $lastRun;
+        $skippable = ($lastRun + $interval) > $now;
+        return true === $skippable && false === $this->isDebug();
     }
 
     /**
