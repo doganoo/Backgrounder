@@ -35,6 +35,8 @@ abstract class Job {
     /** @var string JOB_TYPE_REGULAR */
     public const JOB_TYPE_REGULAR = "regular.type.job";
 
+    /** @var int $id */
+    private $id = 0;
     /** @var int $interval */
     private $interval = null;
     /** @var string $type */
@@ -56,6 +58,20 @@ abstract class Job {
         $this->setInterval($interval);
         $this->setType($type);
         $this->info = [];
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void {
+        $this->id = $id;
     }
 
     /**
