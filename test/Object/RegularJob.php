@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -23,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace Object;
+namespace doganoo\Backgrounder\Test\Object;
 
 use doganoo\Backgrounder\BackgroundJob\RegularJob as RegularJobFrameWork;
 
@@ -44,4 +45,5 @@ class RegularJob extends RegularJobFrameWork {
     protected function afterAction(): void {
         // do stuff
     }
+
 }

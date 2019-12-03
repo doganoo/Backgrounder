@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -23,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace Object;
+namespace doganoo\Backgrounder\Test\Object;
 
 use doganoo\Backgrounder\BackgroundJob\OneTimeJob as OneTimeJobFrameWork;
 
@@ -44,4 +45,5 @@ class OneTimeJob extends OneTimeJobFrameWork {
     protected function afterAction(): void {
         // do stuff
     }
+
 }

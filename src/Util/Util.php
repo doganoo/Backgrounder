@@ -24,25 +24,27 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\Backgrounder\BackgroundJob;
+namespace doganoo\Backgrounder\Util;
 
-/**
- * Class OneTimeJob
- * @package doganoo\Backgrounder\BackgroundJob
- */
-abstract class OneTimeJob extends Job {
-
-    /** @var int ONE_TIME_JOB_INTERVAL */
-    public const ONE_TIME_JOB_INTERVAL = 0;
+class Util {
 
     /**
-     * OneTimeJob constructor.
+     * whether a given function exists
+     *
+     * @param string $name
+     * @return bool
      */
-    public function __construct() {
-        parent::__construct(
-            OneTimeJob::ONE_TIME_JOB_INTERVAL
-            , Job::JOB_TYPE_ONE_TIME
-        );
+    public static function functionExists(string $name): bool {
+        return function_exists($name);
+    }
+
+    /**
+     * whether an extension is loaded
+     * @param string $name
+     * @return bool
+     */
+    public static function extensionExists(string $name): bool {
+        return get_loaded_extensions()[$name] ?? false;
     }
 
 }

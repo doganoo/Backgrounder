@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -41,7 +42,7 @@ class JobList extends ArrayList {
      */
     public function add($item): bool {
 
-        if ($item instanceof Job){
+        if ($item instanceof Job) {
             return parent::add($item);
         }
         throw new InvalidJobException();
@@ -54,7 +55,7 @@ class JobList extends ArrayList {
      */
     public function addAll(ArrayList $arrayList): bool {
 
-        if ($arrayList instanceof JobList){
+        if ($arrayList instanceof JobList) {
             return parent::addAll($arrayList);
         }
         throw new InvalidJobException();
@@ -62,13 +63,13 @@ class JobList extends ArrayList {
 
     /**
      * @param int $index
-     * @param $item
+     * @param     $item
      * @return bool
      * @throws InvalidJobException
      */
     public function addToIndex(int $index, $item): bool {
 
-        if ($item instanceof Job){
+        if ($item instanceof Job) {
             return parent::addToIndex($index, $item);
         }
         throw new InvalidJobException();

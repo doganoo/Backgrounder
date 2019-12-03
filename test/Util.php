@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -23,9 +24,12 @@
  * SOFTWARE.
  */
 
+namespace doganoo\Backgrounder\Test;
+
 use doganoo\Backgrounder\BackgroundJob\JobList;
-use Object\OneTimeJob;
-use Object\RegularJob;
+use doganoo\Backgrounder\Exception\InvalidJobException;
+use doganoo\Backgrounder\Test\Object\OneTimeJob;
+use doganoo\Backgrounder\Test\Object\RegularJob;
 
 /**
  * Class Util
@@ -40,8 +44,9 @@ class Util {
 
     /**
      * @return JobList
+     * @throws InvalidJobException
      */
-    public static function getJobList(): JobList{
+    public static function getJobList(): JobList {
 
         $jobList = new JobList();
         $jobList->add(new OneTimeJob());
@@ -53,11 +58,12 @@ class Util {
     /**
      * @param int $amount
      * @return JobList
+     * @throws InvalidJobException
      */
-    public static function getRegularJob(int $amount = 1): JobList{
+    public static function getRegularJob(int $amount = 1): JobList {
 
         $jobList = new JobList();
-        for ($i = 0;$i<$amount;$i++){
+        for ($i = 0; $i < $amount; $i++) {
             $jobList->add(new RegularJob(5 * 60 * 60));
         }
 

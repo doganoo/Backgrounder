@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -25,10 +26,12 @@
 
 namespace doganoo\Backgrounder;
 
+use DateTime;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\JobList;
 use doganoo\Backgrounder\BackgroundJob\OneTimeJob;
 use doganoo\PHPUtil\FileSystem\DirHandler;
+use Exception;
 
 /**
  * Class Backgrounder
@@ -63,26 +66,32 @@ class Backgrounder {
     /**
      * @param JobList|null $jobList
      */
-    public function setJobList(?JobList $jobList):void {
+    public function setJobList(?JobList $jobList): void {
         $this->jobList = $jobList;
     }
 
     /**
      * @return JobList|null
      */
-    public function getJobList():?JobList{
+    public function getJobList(): ?JobList {
         return $this->jobList;
     }
 
     /**
      * @return bool
      */
-    private function lock():bool {
+    private function lock(): bool {
         if ($this->isLocked()) return false;
 
-        $tempDir = sys_get_temp_dir() . "/";
+        $tempDir    = sys_get_temp_dir() . "/";
         $dirHandler = new DirHandler($tempDir);
-        $created = $dirHandler->createFile(Backgrounder::LOCK_FILE_NAME, false, getmygid());
+
+        $created = $dirHandler->createFile(
+            Backgrounder::LOCK_FILE_NAME
+            , false
+            , (string) getmygid()
+        );
+
         $this->setLocked($created);
         return $created;
     }
@@ -90,26 +99,26 @@ class Backgrounder {
     /**
      * @param bool $debug
      */
-    public function setDebug(bool $debug):void {
+    public function setDebug(bool $debug): void {
         $this->debug = $debug;
     }
 
     /**
      * @return bool
      */
-    public function isDebug():bool {
+    public function isDebug(): bool {
         return $this->debug;
     }
 
     /**
      * @return bool
      */
-    private function unlock():bool {
+    private function unlock(): bool {
         if (false === $this->isLocked()) return true;
-        $tempDir = sys_get_temp_dir() . "/";
+        $tempDir    = sys_get_temp_dir() . "/";
         $dirHandler = new DirHandler($tempDir);
-        $hasFile = $dirHandler->hasFile(Backgrounder::LOCK_FILE_NAME);
-        if (false === $hasFile){
+        $hasFile    = $dirHandler->hasFile(Backgrounder::LOCK_FILE_NAME);
+        if (false === $hasFile) {
             $this->setLocked($hasFile);
             return true;
         }
@@ -120,6 +129,7 @@ class Backgrounder {
 
     /**
      * @return JobList|null
+     * @throws Exception
      */
     public function run(): ?JobList {
 
@@ -128,13 +138,13 @@ class Backgrounder {
 
         $this->lock();
 
-        $now = (new \DateTime())->getTimestamp();
+        $now = (new DateTime())->getTimestamp();
 
         /**
          * @var int $key
          * @var Job $job
          */
-        foreach ($this->getJobList() as $key => &$job){
+        foreach ($this->getJobList() as $key => &$job) {
 
             if ($job instanceof OneTimeJob && null !== $job->getLastRun()) {
                 $job->addInfo("status", Backgrounder::ONE_TIME_JOB_ALREADY_RAN);
@@ -154,7 +164,7 @@ class Backgrounder {
             }
 
             $job->run();
-            $lastRun = (new \DateTime())->getTimestamp();
+            $lastRun = (new DateTime())->getTimestamp();
             $job->setLastRun($lastRun);
             $job->addInfo("status", Backgrounder::JOB_RUN_REGULARLY);
 
@@ -164,8 +174,8 @@ class Backgrounder {
         return $this->getJobList();
     }
 
-    private function isSkippable(?int $lastRun, int $interval, int $now):bool {
-        $lastRun = null === $lastRun ? 0 : $lastRun;
+    private function isSkippable(?int $lastRun, int $interval, int $now): bool {
+        $lastRun   = null === $lastRun ? 0 : $lastRun;
         $skippable = ($lastRun + $interval) > $now;
         return true === $skippable && false === $this->isDebug();
     }
@@ -183,4 +193,5 @@ class Backgrounder {
     public function setLocked(bool $locked): void {
         $this->locked = $locked;
     }
+
 }

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+declare(ticks=1);
 /**
  * MIT License
  *
@@ -25,15 +27,25 @@
 
 namespace doganoo\Backgrounder\BackgroundJob;
 
+use doganoo\Backgrounder\Util\Util;
+use function pcntl_signal;
+
 /**
  * Class Job
  * @package doganoo\Backgrounder\BackgroundJob
  */
 abstract class Job {
+
     /** @var string JOB_TYPE_ONE_TIME */
     public const JOB_TYPE_ONE_TIME = "time.one.type.job";
     /** @var string JOB_TYPE_REGULAR */
     public const JOB_TYPE_REGULAR = "regular.type.job";
+
+    /** @var array SIGNALS */
+    private const SIGNALS = [
+        SIGTERM
+        , SIGHUP
+    ];
 
     /** @var int $id */
     private $id = 0;
@@ -48,7 +60,7 @@ abstract class Job {
 
     /**
      * Job constructor.
-     * @param int $interval
+     * @param int    $interval
      * @param string $type
      */
     public function __construct(
@@ -77,56 +89,56 @@ abstract class Job {
     /**
      * @param string $type
      */
-    protected function setType(string $type):void{
+    protected function setType(string $type): void {
         $this->type = $type;
     }
 
     /**
      * @return string
      */
-    public function getType():string {
+    public function getType(): string {
         return $this->type;
     }
 
     /**
      * @param int $interval
      */
-    protected function setInterval(int $interval):void{
+    protected function setInterval(int $interval): void {
         $this->interval = $interval;
     }
 
     /**
      * @return int
      */
-    public function getInterval():int {
+    public function getInterval(): int {
         return $this->interval;
     }
 
     /**
      * @param int $lastRun
      */
-    public function setLastRun(int $lastRun):void{
+    public function setLastRun(int $lastRun): void {
         $this->lastRun = $lastRun;
     }
 
     /**
      * @return int|null
      */
-    public function getLastRun():?int {
+    public function getLastRun(): ?int {
         return $this->lastRun;
     }
 
     /**
      * @param array $info
      */
-    public function setInfo(array $info){
+    public function setInfo(array $info) {
         $this->info = $info;
     }
 
     /**
      * @return array
      */
-    public function getInfo():array {
+    public function getInfo(): array {
         return $this->info;
     }
 
@@ -134,7 +146,7 @@ abstract class Job {
      * @param $key
      * @param $info
      */
-    public function addInfo($key, $info){
+    public function addInfo($key, $info) {
         $this->info[$key] = $info;
     }
 
@@ -142,9 +154,36 @@ abstract class Job {
      * runs the job
      */
     public function run() {
+        $this->registerSignalHandler();
         $this->onAction();
         $this->action();
         $this->afterAction();
+    }
+
+    /**
+     * registers the signal handler.
+     * Currently, there are only SIGTERM and SIGHUP supported.
+     */
+    private function registerSignalHandler(): void {
+
+        foreach (Job::SIGNALS as $signal) {
+            if (false === Util::extensionExists("pcntl") &&
+                false === Util::functionExists("pcntl_signal")) {
+                echo "\nthe pcntl extension is missing. Can not handle signals\n";
+                continue;
+            }
+            pcntl_signal($signal, [$this, "handleSignal"]);
+        }
+
+    }
+
+    /**
+     * currently nothing. Override when needed!
+     *
+     * @param int $number
+     */
+    protected function handleSignal(int $number): void {
+        return;
     }
 
     protected abstract function onAction(): void;

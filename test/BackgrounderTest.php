@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -23,6 +24,8 @@
  * SOFTWARE.
  */
 
+namespace doganoo\Backgrounder\Test;
+
 use doganoo\Backgrounder\Backgrounder;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\OneTimeJob;
@@ -42,7 +45,7 @@ class BackgrounderTest extends TestCase {
         $jobList = Util::getJobList();
 
         $backgrounder = new Backgrounder($jobList);
-        $result = $backgrounder->run();
+        $result       = $backgrounder->run();
 
         /** @var Job $value */
         foreach ($result as $value) {
@@ -50,16 +53,18 @@ class BackgrounderTest extends TestCase {
         }
 
         $backgrounder = new Backgrounder($result);
-        $result = $backgrounder->run();
+        $result       = $backgrounder->run();
 
         /** @var Job $value */
         foreach ($result as $value) {
             if ($value instanceof OneTimeJob) {
                 $this->assertTrue($value->getInfo()["status"] === Backgrounder::ONE_TIME_JOB_ALREADY_RAN);
-            } else if ($value instanceof RegularJob) {
-                $this->assertTrue($value->getInfo()["status"] === Backgrounder::REGULAR_JOB_INTERVAL_NOT_REACHED);
             } else {
-                $this->assertTrue(false);
+                if ($value instanceof RegularJob) {
+                    $this->assertTrue($value->getInfo()["status"] === Backgrounder::REGULAR_JOB_INTERVAL_NOT_REACHED);
+                } else {
+                    $this->assertTrue(false);
+                }
             }
 
         }
@@ -73,7 +78,7 @@ class BackgrounderTest extends TestCase {
         $jobList = Util::getRegularJob(1);
 
         $backgrounder = new Backgrounder($jobList);
-        $result = $backgrounder->run();
+        $result       = $backgrounder->run();
 
         /** @var Job $job */
         $job = $result->get(0);
@@ -81,7 +86,7 @@ class BackgrounderTest extends TestCase {
         $this->assertTrue($job->getInfo()["status"] === Backgrounder::JOB_RUN_REGULARLY);
 
         $backgrounder = new Backgrounder($result);
-        $result = $backgrounder->run();
+        $result       = $backgrounder->run();
 
         /** @var Job $job */
         $job = $result->get(0);
@@ -90,7 +95,7 @@ class BackgrounderTest extends TestCase {
 
         $job->setLastRun(1);
         $backgrounder = new Backgrounder($result);
-        $result = $backgrounder->run();
+        $result       = $backgrounder->run();
 
         /** @var Job $job */
         $job = $result->get(0);
@@ -98,4 +103,5 @@ class BackgrounderTest extends TestCase {
         $this->assertTrue($job->getInfo()["status"] === Backgrounder::JOB_RUN_REGULARLY);
 
     }
+
 }

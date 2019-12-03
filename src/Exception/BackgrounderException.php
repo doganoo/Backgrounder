@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -30,6 +31,8 @@ namespace doganoo\Backgrounder\Exception;
  * @package doganoo\Backgrounder\Exception
  */
 class BackgrounderException extends \Exception {
+
     /** @var string $message */
     protected $message = 'no message given ¯\_(ツ)_/¯';
+
 }
