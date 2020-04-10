@@ -27,6 +27,7 @@ declare(ticks=1);
 
 namespace doganoo\Backgrounder\BackgroundJob;
 
+use DateTime;
 use doganoo\Backgrounder\Util\Util;
 use function pcntl_signal;
 
@@ -57,6 +58,8 @@ abstract class Job {
     private $lastRun = null;
     /** @var array $info */
     private $info = null;
+    /** @var DateTime $createTs */
+    private $createTs;
 
     /**
      * Job constructor.
@@ -131,7 +134,7 @@ abstract class Job {
     /**
      * @param array $info
      */
-    public function setInfo(array $info) {
+    public function setInfo(array $info): void {
         $this->info = $info;
     }
 
@@ -146,8 +149,19 @@ abstract class Job {
      * @param $key
      * @param $info
      */
-    public function addInfo($key, $info) {
+    public function addInfo($key, $info): void {
         $this->info[$key] = $info;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getCreateTs(): DateTime {
+        return $this->createTs;
+    }
+
+    public function setCreateTs(DateTime $createTs): void {
+        $this->createTs = $createTs;
     }
 
     /**

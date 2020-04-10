@@ -26,6 +26,10 @@ declare(strict_types=1);
 
 namespace doganoo\Backgrounder\Util;
 
+/**
+ * Class Util
+ * @package doganoo\Backgrounder\Util
+ */
 class Util {
 
     /**
