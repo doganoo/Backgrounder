@@ -164,8 +164,7 @@ class Backgrounder {
             }
 
             $job->run();
-            $lastRun = (new DateTime())->getTimestamp();
-            $job->setLastRun($lastRun);
+            $job->setLastRun(new DateTime());
             $job->addInfo("status", Backgrounder::JOB_RUN_REGULARLY);
 
         }
@@ -174,8 +173,11 @@ class Backgrounder {
         return $this->getJobList();
     }
 
-    private function isSkippable(?int $lastRun, int $interval, int $now): bool {
-        $lastRun   = null === $lastRun ? 0 : $lastRun;
+    private function isSkippable(?DateTime $lastRun, int $interval, int $now): bool {
+        $lastRun   =
+            null === $lastRun
+                ? 0
+                : $lastRun->getTimestamp();
         $skippable = ($lastRun + $interval) > $now;
         return true === $skippable && false === $this->isDebug();
     }

@@ -54,7 +54,7 @@ abstract class Job {
     private $interval = null;
     /** @var string $type */
     private $type = null;
-    /** @var null|int $lastRun */
+    /** @var null|DateTime $lastRun */
     private $lastRun = null;
     /** @var array $info */
     private $info = null;
@@ -118,16 +118,16 @@ abstract class Job {
     }
 
     /**
-     * @param int $lastRun
+     * @param DateTime $lastRun
      */
-    public function setLastRun(int $lastRun): void {
+    public function setLastRun(?DateTime $lastRun): void {
         $this->lastRun = $lastRun;
     }
 
     /**
-     * @return int|null
+     * @return DateTime|null
      */
-    public function getLastRun(): ?int {
+    public function getLastRun(): ?DateTime {
         return $this->lastRun;
     }
 

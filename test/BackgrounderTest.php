@@ -26,10 +26,12 @@ declare(strict_types=1);
 
 namespace doganoo\Backgrounder\Test;
 
+use DateTime;
 use doganoo\Backgrounder\Backgrounder;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\OneTimeJob;
 use doganoo\Backgrounder\BackgroundJob\RegularJob;
+use doganoo\PHPUtil\Util\DateTimeUtil;
 use PHPUnit\Framework\TestCase;
 
 
@@ -93,7 +95,9 @@ class BackgrounderTest extends TestCase {
 
         $this->assertTrue($job->getInfo()["status"] === Backgrounder::REGULAR_JOB_INTERVAL_NOT_REACHED);
 
-        $job->setLastRun(1);
+        $lastRun = new DateTime();
+        $lastRun->setTimestamp(1);
+        $job->setLastRun($lastRun);
         $backgrounder = new Backgrounder($result);
         $result       = $backgrounder->run();
 
