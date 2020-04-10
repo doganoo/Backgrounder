@@ -50,6 +50,8 @@ abstract class Job {
 
     /** @var int $id */
     private $id = 0;
+    /** @var string $name */
+    private $name;
     /** @var int $interval */
     private $interval = null;
     /** @var string $type */
@@ -87,6 +89,20 @@ abstract class Job {
      */
     public function setId(int $id): void {
         $this->id = $id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void {
+        $this->name = $name;
     }
 
     /**

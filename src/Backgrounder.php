@@ -151,7 +151,6 @@ class Backgrounder {
                 continue;
             }
 
-
             $skippable = $this->isSkippable(
                 $job->getLastRun()
                 , $job->getInterval()
