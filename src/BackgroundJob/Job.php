@@ -56,7 +56,7 @@ abstract class Job {
     private $type = null;
     /** @var null|DateTime $lastRun */
     private $lastRun = null;
-    /** @var array $info */
+    /** @var null|array $info */
     private $info = null;
     /** @var DateTime $createTs */
     private $createTs;
@@ -132,24 +132,24 @@ abstract class Job {
     }
 
     /**
-     * @param array $info
+     * @param null|array $info
      */
-    public function setInfo(array $info): void {
+    public function setInfo(?array $info): void {
         $this->info = $info;
     }
 
     /**
-     * @return array
+     * @return array|null
      */
-    public function getInfo(): array {
+    public function getInfo(): ?array {
         return $this->info;
     }
 
     /**
-     * @param $key
-     * @param $info
+     * @param string $key
+     * @param mixed  $info
      */
-    public function addInfo($key, $info): void {
+    public function addInfo(string $key, $info): void {
         $this->info[$key] = $info;
     }
 
