@@ -28,25 +28,17 @@ declare(ticks=1);
 namespace doganoo\Backgrounder\BackgroundJob;
 
 use DateTime;
-use doganoo\Backgrounder\Util\Util;
-use function pcntl_signal;
 
 /**
  * Class Job
  * @package doganoo\Backgrounder\BackgroundJob
  */
-abstract class Job {
+class Job {
 
     /** @var string JOB_TYPE_ONE_TIME */
     public const JOB_TYPE_ONE_TIME = "time.one.type.job";
     /** @var string JOB_TYPE_REGULAR */
     public const JOB_TYPE_REGULAR = "regular.type.job";
-
-    /** @var array SIGNALS */
-    private const SIGNALS = [
-        SIGTERM
-        , SIGHUP
-    ];
 
     /** @var int $id */
     private $id = 0;
@@ -62,20 +54,6 @@ abstract class Job {
     private $info = null;
     /** @var DateTime $createTs */
     private $createTs;
-
-    /**
-     * Job constructor.
-     * @param int    $interval
-     * @param string $type
-     */
-    public function __construct(
-        int $interval
-        , string $type = Job::JOB_TYPE_REGULAR
-    ) {
-        $this->setInterval($interval);
-        $this->setType($type);
-        $this->info = [];
-    }
 
     /**
      * @return int
@@ -170,6 +148,13 @@ abstract class Job {
     }
 
     /**
+     * @return bool
+     */
+    public function isOneTime(): bool {
+        return Job::JOB_TYPE_ONE_TIME === $this->getType();
+    }
+
+    /**
      * @return DateTime
      */
     public function getCreateTs(): DateTime {
@@ -179,47 +164,5 @@ abstract class Job {
     public function setCreateTs(DateTime $createTs): void {
         $this->createTs = $createTs;
     }
-
-    /**
-     * runs the job
-     */
-    public function run() {
-        $this->registerSignalHandler();
-        $this->onAction();
-        $this->action();
-        $this->afterAction();
-    }
-
-    /**
-     * registers the signal handler.
-     * Currently, there are only SIGTERM and SIGHUP supported.
-     */
-    private function registerSignalHandler(): void {
-
-        foreach (Job::SIGNALS as $signal) {
-            if (false === Util::extensionExists("pcntl") &&
-                false === Util::functionExists("pcntl_signal")) {
-                echo "\nthe pcntl extension is missing. Can not handle signals\n";
-                continue;
-            }
-            pcntl_signal($signal, [$this, "handleSignal"]);
-        }
-
-    }
-
-    /**
-     * currently nothing. Override when needed!
-     *
-     * @param int $number
-     */
-    protected function handleSignal(int $number): void {
-        return;
-    }
-
-    protected abstract function onAction(): void;
-
-    protected abstract function action(): void;
-
-    protected abstract function afterAction(): void;
 
 }

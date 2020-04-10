@@ -24,26 +24,18 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\Backgrounder\Test\Object;
-
-use doganoo\Backgrounder\BackgroundJob\OneTimeJob as OneTimeJobFrameWork;
+namespace doganoo\Backgrounder\Util;
 
 /**
- * Class OneTimeJob
- * @package Object
+ * Class Container
+ * @package doganoo\Backgrounder\Util
  */
-class OneTimeJob extends OneTimeJobFrameWork {
+abstract class Container {
 
-    protected function onAction(): void {
-        // do stuff
-    }
-
-    protected function action(): void {
-        // do stuff
-    }
-
-    protected function afterAction(): void {
-        // do stuff
-    }
+    /**
+     * @param string $name
+     * @return mixed
+     */
+    public abstract function query(string $name);
 
 }

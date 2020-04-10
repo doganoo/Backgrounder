@@ -24,25 +24,12 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\Backgrounder\BackgroundJob;
+namespace doganoo\Backgrounder\Exception;
 
 /**
- * Class OneTimeJob
- * @package doganoo\Backgrounder\BackgroundJob
+ * Class InvalidTaskException
+ * @package doganoo\Backgrounder\Exception
  */
-abstract class OneTimeJob extends Job {
-
-    /** @var int ONE_TIME_JOB_INTERVAL */
-    public const ONE_TIME_JOB_INTERVAL = 0;
-
-    /**
-     * OneTimeJob constructor.
-     */
-    public function __construct() {
-        parent::__construct(
-            OneTimeJob::ONE_TIME_JOB_INTERVAL
-            , Job::JOB_TYPE_ONE_TIME
-        );
-    }
+class InvalidTaskException extends BackgrounderException {
 
 }

@@ -29,7 +29,8 @@ namespace doganoo\Backgrounder;
 use DateTime;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\JobList;
-use doganoo\Backgrounder\BackgroundJob\OneTimeJob;
+use doganoo\Backgrounder\Task\Task;
+use doganoo\Backgrounder\Util\Container;
 use doganoo\PHPUtil\FileSystem\DirHandler;
 use Exception;
 
@@ -41,12 +42,16 @@ class Backgrounder {
 
     /** @var string LOCK_FILE_NAME */
     public const LOCK_FILE_NAME = 'name.file.lock.lock';
-    /** @var string ONE_TIME_JOB_ALREADY_RAN */
-    public const ONE_TIME_JOB_ALREADY_RAN = "ran.already.job.time.one";
-    /** @var string REGULAR_JOB_INTERVAL_NOT_REACHED */
-    public const REGULAR_JOB_INTERVAL_NOT_REACHED = "reached.not.interval.job.regular";
-    /** @var string JOB_RUN_REGULARLY */
-    public const JOB_RUN_REGULARLY = "regularly.run.job";
+    /** @var string ONE_TIME_TASK_ALREADY_RAN */
+    public const ONE_TIME_TASK_ALREADY_RAN = "ran.already.task.time.one";
+    /** @var string REGULAR_TASK_INTERVAL_NOT_REACHED */
+    public const REGULAR_TASK_INTERVAL_NOT_REACHED = "reached.not.interval.task.regular";
+    /** @var string TASK_RUN_REGULARLY */
+    public const TASK_RUN_REGULARLY = "regularly.run.task";
+    /** @var string TASK_HAS_ERRORS */
+    public const TASK_HAS_ERRORS = "errors.has.task";
+    /** @var string TASK_NOT_FOUND */
+    public const TASK_NOT_FOUND = "found.not.task";
 
     /** @var JobList $jobList */
     private $jobList = null;
@@ -54,27 +59,98 @@ class Backgrounder {
     private $locked = false;
     /** @var bool $debug */
     private $debug = false;
+    /** @var Container $container */
+    private $container = null;
 
     /**
      * Backgrounder constructor.
-     * @param JobList|null $jobList
+     * @param JobList   $jobList
+     * @param Container $container
      */
-    public function __construct(?JobList $jobList) {
+    public function __construct(
+        JobList $jobList
+        , Container $container
+    ) {
         $this->setJobList($jobList);
-    }
-
-    /**
-     * @param JobList|null $jobList
-     */
-    public function setJobList(?JobList $jobList): void {
-        $this->jobList = $jobList;
+        $this->setContainer($container);
     }
 
     /**
      * @return JobList|null
+     * @throws Exception
      */
-    public function getJobList(): ?JobList {
-        return $this->jobList;
+    public function run(): JobList {
+
+        if ($this->isLocked()) return $this->getJobList();
+
+        $this->lock();
+
+        /**
+         * @var int $key
+         * @var Job $job
+         */
+        foreach ($this->getJobList() as $key => &$job) {
+
+            if (true === $job->isOneTime() && null !== $job->getLastRun()) {
+                $job->addInfo("status", Backgrounder::ONE_TIME_TASK_ALREADY_RAN);
+                continue;
+            }
+
+            $skippable = $this->isSkippable(
+                $job->getLastRun()
+                , $job->getInterval()
+                , new DateTime()
+            );
+
+            if (true === $skippable) {
+                $job->addInfo("status", Backgrounder::REGULAR_TASK_INTERVAL_NOT_REACHED);
+                continue;
+            }
+
+            /** @var Task $task */
+            $task = $this->getContainer()->query($job->getName());
+
+            if (null === $task) {
+                $job->addInfo(
+                    "task run"
+                    , Backgrounder::TASK_NOT_FOUND
+                );
+                continue;
+            }
+
+            $ran = $task->run();
+
+            if (false === $ran) {
+
+                $job->addInfo(
+                    "task run"
+                    , Backgrounder::TASK_HAS_ERRORS
+                );
+                continue;
+            }
+
+            $job->setLastRun(new DateTime());
+            $job->addInfo("status", Backgrounder::TASK_RUN_REGULARLY);
+
+        }
+
+        $this->unlock();
+        return $this->getJobList();
+    }
+
+    /**
+     * @param DateTime|null $lastRun
+     * @param int           $interval
+     * @param DateTime      $now
+     * @return bool
+     */
+    private function isSkippable(?DateTime $lastRun, int $interval, DateTime $now): bool {
+        $lastRun   =
+            null === $lastRun
+                ? 0
+                : $lastRun->getTimestamp();
+        $skippable = ($lastRun + $interval) > $now->getTimestamp();
+        return true === $skippable && false === $this->isDebug();
     }
 
     /**
@@ -97,20 +173,6 @@ class Backgrounder {
     }
 
     /**
-     * @param bool $debug
-     */
-    public function setDebug(bool $debug): void {
-        $this->debug = $debug;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDebug(): bool {
-        return $this->debug;
-    }
-
-    /**
      * @return bool
      */
     private function unlock(): bool {
@@ -119,66 +181,12 @@ class Backgrounder {
         $dirHandler = new DirHandler($tempDir);
         $hasFile    = $dirHandler->hasFile(Backgrounder::LOCK_FILE_NAME);
         if (false === $hasFile) {
-            $this->setLocked($hasFile);
+            $this->setLocked(false);
             return true;
         }
         $deleted = $dirHandler->deleteFile(Backgrounder::LOCK_FILE_NAME);
         $this->setLocked($deleted);
         return $deleted;
-    }
-
-    /**
-     * @return JobList|null
-     * @throws Exception
-     */
-    public function run(): ?JobList {
-
-        if (null === $this->getJobList()) return null;
-        if ($this->isLocked()) return $this->jobList;
-
-        $this->lock();
-
-        $now = (new DateTime())->getTimestamp();
-
-        /**
-         * @var int $key
-         * @var Job $job
-         */
-        foreach ($this->getJobList() as $key => &$job) {
-
-            if ($job instanceof OneTimeJob && null !== $job->getLastRun()) {
-                $job->addInfo("status", Backgrounder::ONE_TIME_JOB_ALREADY_RAN);
-                continue;
-            }
-
-            $skippable = $this->isSkippable(
-                $job->getLastRun()
-                , $job->getInterval()
-                , $now
-            );
-
-            if (true === $skippable) {
-                $job->addInfo("status", Backgrounder::REGULAR_JOB_INTERVAL_NOT_REACHED);
-                continue;
-            }
-
-            $job->run();
-            $job->setLastRun(new DateTime());
-            $job->addInfo("status", Backgrounder::JOB_RUN_REGULARLY);
-
-        }
-
-        $this->unlock();
-        return $this->getJobList();
-    }
-
-    private function isSkippable(?DateTime $lastRun, int $interval, int $now): bool {
-        $lastRun   =
-            null === $lastRun
-                ? 0
-                : $lastRun->getTimestamp();
-        $skippable = ($lastRun + $interval) > $now;
-        return true === $skippable && false === $this->isDebug();
     }
 
     /**
@@ -193,6 +201,48 @@ class Backgrounder {
      */
     public function setLocked(bool $locked): void {
         $this->locked = $locked;
+    }
+
+    /**
+     * @param JobList $jobList
+     */
+    public function setJobList(JobList $jobList): void {
+        $this->jobList = $jobList;
+    }
+
+    /**
+     * @return JobList
+     */
+    public function getJobList(): JobList {
+        return $this->jobList;
+    }
+
+    /**
+     * @param Container $container
+     */
+    public function setContainer(Container $container): void {
+        $this->container = $container;
+    }
+
+    /**
+     * @return Container
+     */
+    public function getContainer(): Container {
+        return $this->container;
+    }
+
+    /**
+     * @param bool $debug
+     */
+    public function setDebug(bool $debug): void {
+        $this->debug = $debug;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool {
+        return $this->debug;
     }
 
 }
