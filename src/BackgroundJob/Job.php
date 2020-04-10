@@ -86,7 +86,7 @@ class Job {
     /**
      * @param string $type
      */
-    protected function setType(string $type): void {
+    public function setType(string $type): void {
         $this->type = $type;
     }
 
@@ -100,7 +100,7 @@ class Job {
     /**
      * @param int $interval
      */
-    protected function setInterval(int $interval): void {
+    public function setInterval(int $interval): void {
         $this->interval = $interval;
     }
 
