@@ -27,10 +27,12 @@ declare(ticks=1);
 
 namespace doganoo\Backgrounder\Task;
 
+use doganoo\Backgrounder\Service\Log\ILoggerService;
 use doganoo\Backgrounder\Util\Util;
 
 /**
  * Class Task
+ *
  * @package doganoo\Backgrounder\Task
  */
 abstract class Task {
@@ -40,6 +42,12 @@ abstract class Task {
         SIGTERM
         , SIGHUP
     ];
+
+    /** @var ILoggerService */
+    private $logger;
+
+    /** @var bool */
+    private $debug;
 
     /**
      * runs the job
@@ -70,15 +78,6 @@ abstract class Task {
     }
 
     /**
-     * currently nothing. Override when needed!
-     *
-     * @param int $number
-     */
-    protected function handleSignal(int $number): void {
-        return;
-    }
-
-    /**
      * runs before action is performed
      */
     protected abstract function onAction(): void;
@@ -94,5 +93,42 @@ abstract class Task {
      * runs after action is performed
      */
     protected abstract function onClose(): void;
+
+    /**
+     * @return ILoggerService
+     */
+    public function getLogger(): ILoggerService {
+        return $this->logger;
+    }
+
+    /**
+     * @param ILoggerService $logger
+     */
+    public function setLogger(ILoggerService $logger): void {
+        $this->logger = $logger;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool {
+        return $this->debug;
+    }
+
+    /**
+     * @param bool $debug
+     */
+    public function setDebug(bool $debug): void {
+        $this->debug = $debug;
+    }
+
+    /**
+     * currently nothing. Override when needed!
+     *
+     * @param int $number
+     */
+    protected function handleSignal(int $number): void {
+        return;
+    }
 
 }

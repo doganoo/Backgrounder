@@ -29,6 +29,7 @@ namespace doganoo\Backgrounder;
 use DateTime;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\JobList;
+use doganoo\Backgrounder\Service\Log\ILoggerService;
 use doganoo\Backgrounder\Task\Task;
 use doganoo\Backgrounder\Util\Container;
 use doganoo\PHPUtil\FileSystem\DirHandler;
@@ -36,6 +37,7 @@ use Exception;
 
 /**
  * Class Backgrounder
+ *
  * @package doganoo\Backgrounder
  */
 class Backgrounder {
@@ -53,26 +55,32 @@ class Backgrounder {
     /** @var string TASK_NOT_FOUND */
     public const TASK_NOT_FOUND = "found.not.task";
 
-    /** @var JobList $jobList */
-    private $jobList = null;
-    /** @var bool $locked */
-    private $locked = false;
-    /** @var bool $debug */
-    private $debug = false;
-    /** @var Container $container */
-    private $container = null;
+    /** @var JobList */
+    private $jobList;
+    /** @var bool */
+    private $locked;
+    /** @var bool */
+    private $debug;
+    /** @var Container */
+    private $container;
+    /** @var ILoggerService */
+    private $logger;
 
     /**
      * Backgrounder constructor.
-     * @param JobList   $jobList
-     * @param Container $container
+     *
+     * @param JobList        $jobList
+     * @param Container      $container
+     * @param ILoggerService $logger
      */
     public function __construct(
         JobList $jobList
         , Container $container
+        , ILoggerService $logger
     ) {
         $this->setJobList($jobList);
         $this->setContainer($container);
+        $this->setLogger($logger);
     }
 
     /**
@@ -118,6 +126,9 @@ class Backgrounder {
                 continue;
             }
 
+            $task->setLogger($this->logger);
+            $task->setDebug($this->debug);
+
             $ran = $task->run();
 
             if (false === $ran) {
@@ -139,18 +150,31 @@ class Backgrounder {
     }
 
     /**
-     * @param DateTime|null $lastRun
-     * @param int           $interval
-     * @param DateTime      $now
      * @return bool
      */
-    private function isSkippable(?DateTime $lastRun, int $interval, DateTime $now): bool {
-        $lastRun   =
-            null === $lastRun
-                ? 0
-                : $lastRun->getTimestamp();
-        $skippable = ($lastRun + $interval) > $now->getTimestamp();
-        return true === $skippable && false === $this->isDebug();
+    public function isLocked(): bool {
+        return $this->locked;
+    }
+
+    /**
+     * @param bool $locked
+     */
+    public function setLocked(bool $locked): void {
+        $this->locked = $locked;
+    }
+
+    /**
+     * @return JobList
+     */
+    public function getJobList(): JobList {
+        return $this->jobList;
+    }
+
+    /**
+     * @param JobList $jobList
+     */
+    public function setJobList(JobList $jobList): void {
+        $this->jobList = $jobList;
     }
 
     /**
@@ -173,6 +197,50 @@ class Backgrounder {
     }
 
     /**
+     * @param DateTime|null $lastRun
+     * @param int           $interval
+     * @param DateTime      $now
+     *
+     * @return bool
+     */
+    private function isSkippable(?DateTime $lastRun, int $interval, DateTime $now): bool {
+        $lastRun   =
+            null === $lastRun
+                ? 0
+                : $lastRun->getTimestamp();
+        $skippable = ($lastRun + $interval) > $now->getTimestamp();
+        return true === $skippable && false === $this->isDebug();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug(): bool {
+        return $this->debug;
+    }
+
+    /**
+     * @param bool $debug
+     */
+    public function setDebug(bool $debug): void {
+        $this->debug = $debug;
+    }
+
+    /**
+     * @return Container
+     */
+    public function getContainer(): Container {
+        return $this->container;
+    }
+
+    /**
+     * @param Container $container
+     */
+    public function setContainer(Container $container): void {
+        $this->container = $container;
+    }
+
+    /**
      * @return bool
      */
     private function unlock(): bool {
@@ -190,59 +258,17 @@ class Backgrounder {
     }
 
     /**
-     * @return bool
+     * @return ILoggerService
      */
-    public function isLocked(): bool {
-        return $this->locked;
+    public function getLogger(): ILoggerService {
+        return $this->logger;
     }
 
     /**
-     * @param bool $locked
+     * @param ILoggerService $logger
      */
-    public function setLocked(bool $locked): void {
-        $this->locked = $locked;
-    }
-
-    /**
-     * @param JobList $jobList
-     */
-    public function setJobList(JobList $jobList): void {
-        $this->jobList = $jobList;
-    }
-
-    /**
-     * @return JobList
-     */
-    public function getJobList(): JobList {
-        return $this->jobList;
-    }
-
-    /**
-     * @param Container $container
-     */
-    public function setContainer(Container $container): void {
-        $this->container = $container;
-    }
-
-    /**
-     * @return Container
-     */
-    public function getContainer(): Container {
-        return $this->container;
-    }
-
-    /**
-     * @param bool $debug
-     */
-    public function setDebug(bool $debug): void {
-        $this->debug = $debug;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDebug(): bool {
-        return $this->debug;
+    public function setLogger(ILoggerService $logger): void {
+        $this->logger = $logger;
     }
 
 }
