@@ -58,9 +58,9 @@ class Backgrounder {
     /** @var JobList */
     private $jobList;
     /** @var bool */
-    private $locked;
+    private $locked = false;
     /** @var bool */
-    private $debug;
+    private $debug = false;
     /** @var Container */
     private $container;
     /** @var ILoggerService */
