@@ -27,7 +27,7 @@ declare(strict_types=1);
 namespace doganoo\Backgrounder\BackgroundJob;
 
 use doganoo\Backgrounder\Exception\InvalidJobException;
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
 
 /**
  * Class JobList

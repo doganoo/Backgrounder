@@ -16,13 +16,11 @@
     }
   },
   "require": {
-    "doganoo/php-algorithms": "0.0.*",
+    "doganoo/php-algorithms": "^1.0",
     "ext-pcntl": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "6.5"
-  },
-  "scripts": {
-    "run-test": "vendor/bin/phpunit test"
+    "phpunit/phpunit": "6.5",
+    "phpstan/phpstan": "^0.12.25"
   }
 }
