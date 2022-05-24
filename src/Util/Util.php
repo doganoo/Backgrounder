@@ -48,7 +48,7 @@ class Util {
      * @return bool
      */
     public static function extensionExists(string $name): bool {
-        return get_loaded_extensions()[$name] ?? false;
+        return true === in_array($name, get_loaded_extensions(), true);
     }
 
 }

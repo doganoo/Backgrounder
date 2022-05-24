@@ -28,6 +28,7 @@ declare(ticks=1);
 namespace doganoo\Backgrounder\BackgroundJob;
 
 use DateTime;
+use DateTimeInterface;
 
 /**
  * Class Job
@@ -40,20 +41,13 @@ class Job {
     /** @var string JOB_TYPE_REGULAR */
     public const JOB_TYPE_REGULAR = "regular.type.job";
 
-    /** @var int $id */
-    private $id = 0;
-    /** @var string $name */
-    private $name;
-    /** @var int $interval */
-    private $interval = null;
-    /** @var string $type */
-    private $type = null;
-    /** @var null|DateTime $lastRun */
-    private $lastRun = null;
-    /** @var null|array $info */
-    private $info = null;
-    /** @var DateTime $createTs */
-    private $createTs;
+    private int                $id       = 0;
+    private string             $name;
+    private int                $interval = 0;
+    private string             $type     = '';
+    private ?DateTimeInterface $lastRun  = null;
+    private ?array             $info     = null;
+    private DateTimeInterface  $createTs;
 
     /**
      * @return int
@@ -112,16 +106,17 @@ class Job {
     }
 
     /**
-     * @param DateTime $lastRun
+     * @param DateTimeInterface|null $lastRun
+     * @return void
      */
-    public function setLastRun(?DateTime $lastRun): void {
+    public function setLastRun(?DateTimeInterface $lastRun): void {
         $this->lastRun = $lastRun;
     }
 
     /**
-     * @return DateTime|null
+     * @return DateTimeInterface|null
      */
-    public function getLastRun(): ?DateTime {
+    public function getLastRun(): ?DateTimeInterface {
         return $this->lastRun;
     }
 
@@ -155,13 +150,13 @@ class Job {
     }
 
     /**
-     * @return DateTime
+     * @return DateTimeInterface
      */
-    public function getCreateTs(): DateTime {
+    public function getCreateTs(): DateTimeInterface {
         return $this->createTs;
     }
 
-    public function setCreateTs(DateTime $createTs): void {
+    public function setCreateTs(DateTimeInterface $createTs): void {
         $this->createTs = $createTs;
     }
 

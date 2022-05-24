@@ -27,8 +27,8 @@ declare(ticks=1);
 
 namespace doganoo\Backgrounder\Task;
 
-use doganoo\Backgrounder\Service\Log\ILoggerService;
 use doganoo\Backgrounder\Util\Util;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Task
@@ -43,11 +43,8 @@ abstract class Task {
         , SIGHUP
     ];
 
-    /** @var ILoggerService */
-    private $logger;
-
-    /** @var bool */
-    private $debug;
+    private LoggerInterface $logger;
+    private bool            $debug = false;
 
     /**
      * runs the job
@@ -95,16 +92,16 @@ abstract class Task {
     protected abstract function onClose(): void;
 
     /**
-     * @return ILoggerService
+     * @return LoggerInterface
      */
-    public function getLogger(): ILoggerService {
+    public function getLogger(): LoggerInterface {
         return $this->logger;
     }
 
     /**
-     * @param ILoggerService $logger
+     * @param LoggerInterface $logger
      */
-    public function setLogger(ILoggerService $logger): void {
+    public function setLogger(LoggerInterface $logger): void {
         $this->logger = $logger;
     }
 

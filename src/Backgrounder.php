@@ -27,13 +27,14 @@ declare(strict_types=1);
 namespace doganoo\Backgrounder;
 
 use DateTime;
+use DateTimeInterface;
 use doganoo\Backgrounder\BackgroundJob\Job;
 use doganoo\Backgrounder\BackgroundJob\JobList;
-use doganoo\Backgrounder\Service\Log\ILoggerService;
 use doganoo\Backgrounder\Task\Task;
-use doganoo\Backgrounder\Util\Container;
 use doganoo\PHPUtil\FileSystem\DirHandler;
 use Exception;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Backgrounder
@@ -55,28 +56,23 @@ class Backgrounder {
     /** @var string TASK_NOT_FOUND */
     public const TASK_NOT_FOUND = "found.not.task";
 
-    /** @var JobList */
-    private $jobList;
-    /** @var bool */
-    private $locked = false;
-    /** @var bool */
-    private $debug = false;
-    /** @var Container */
-    private $container;
-    /** @var ILoggerService */
-    private $logger;
+    private JobList            $jobList;
+    private bool               $locked = false;
+    private bool               $debug  = false;
+    private ContainerInterface $container;
+    private LoggerInterface    $logger;
 
     /**
      * Backgrounder constructor.
      *
-     * @param JobList        $jobList
-     * @param Container      $container
-     * @param ILoggerService $logger
+     * @param JobList            $jobList
+     * @param ContainerInterface $container
+     * @param LoggerInterface    $logger
      */
     public function __construct(
-        JobList $jobList
-        , Container $container
-        , ILoggerService $logger
+        JobList              $jobList
+        , ContainerInterface $container
+        , LoggerInterface    $logger
     ) {
         $this->setJobList($jobList);
         $this->setContainer($container);
@@ -84,7 +80,7 @@ class Backgrounder {
     }
 
     /**
-     * @return JobList|null
+     * @return JobList
      * @throws Exception
      */
     public function run(): JobList {
@@ -115,8 +111,8 @@ class Backgrounder {
                 continue;
             }
 
-            /** @var Task $task */
-            $task = $this->getContainer()->query($job->getName());
+            /** @var ?Task $task */
+            $task = $this->getContainer()->get($job->getName());
 
             if (null === $task) {
                 $job->addInfo(
@@ -197,13 +193,13 @@ class Backgrounder {
     }
 
     /**
-     * @param DateTime|null $lastRun
-     * @param int           $interval
-     * @param DateTime      $now
+     * @param DateTimeInterface|null $lastRun
+     * @param int                    $interval
+     * @param DateTime               $now
      *
      * @return bool
      */
-    private function isSkippable(?DateTime $lastRun, int $interval, DateTime $now): bool {
+    private function isSkippable(?DateTimeInterface $lastRun, int $interval, DateTime $now): bool {
         $lastRun   =
             null === $lastRun
                 ? 0
@@ -227,16 +223,16 @@ class Backgrounder {
     }
 
     /**
-     * @return Container
+     * @return ContainerInterface
      */
-    public function getContainer(): Container {
+    public function getContainer(): ContainerInterface {
         return $this->container;
     }
 
     /**
-     * @param Container $container
+     * @param ContainerInterface $container
      */
-    public function setContainer(Container $container): void {
+    public function setContainer(ContainerInterface $container): void {
         $this->container = $container;
     }
 
@@ -258,16 +254,16 @@ class Backgrounder {
     }
 
     /**
-     * @return ILoggerService
+     * @return LoggerInterface
      */
-    public function getLogger(): ILoggerService {
+    public function getLogger(): LoggerInterface {
         return $this->logger;
     }
 
     /**
-     * @param ILoggerService $logger
+     * @param LoggerInterface $logger
      */
-    public function setLogger(ILoggerService $logger): void {
+    public function setLogger(LoggerInterface $logger): void {
         $this->logger = $logger;
     }
 

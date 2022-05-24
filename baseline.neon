@@ -1,0 +1,21 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method doganoo\\\\Backgrounder\\\\BackgroundJob\\\\JobList\\:\\:add\\(\\) has parameter \\$item with no type specified\\.$#"
+			count: 1
+			path: src/BackgroundJob/JobList.php
+
+		-
+			message: "#^Method doganoo\\\\Backgrounder\\\\BackgroundJob\\\\JobList\\:\\:addToIndex\\(\\) has parameter \\$item with no type specified\\.$#"
+			count: 1
+			path: src/BackgroundJob/JobList.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$item\\)\\: Unexpected token \"\\$item\", expected type at offset 18$#"
+			count: 1
+			path: src/BackgroundJob/JobList.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$item\\)\\: Unexpected token \"\\$item\", expected type at offset 47$#"
+			count: 1
+			path: src/BackgroundJob/JobList.php

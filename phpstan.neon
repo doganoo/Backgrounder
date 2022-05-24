@@ -1,0 +1,6 @@
+includes:
+    - %rootDir%/../../../baseline.neon
+parameters:
+	checkMissingIterableValueType: false
+	treatPhpDocTypesAsCertain: false
+	reportUnmatchedIgnoredErrors: true
