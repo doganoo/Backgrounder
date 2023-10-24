@@ -15,6 +15,9 @@
       "doganoo\\Backgrounder\\Test\\": "test/"
     }
   },
+  "conflict": {
+    "stevebauman/unfinalize": "*"
+  },
   "require": {
     "php": ">7.4",
     "doganoo/php-algorithms": "^2.0",
